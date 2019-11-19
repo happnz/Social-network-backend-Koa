@@ -1,0 +1,28 @@
+{
+  "name": "social-network-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon --watch ./index.js",
+    "debug": "nodemon --watch --inspect ./index.js",
+    "test": "test"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "apidoc": "^0.18.0",
+    "koa": "^2.11.0",
+    "koa-bodyparser": "^4.2.1",
+    "koa-json": "^2.0.2",
+    "koa-logger": "^3.2.1",
+    "koa-router": "^7.4.0",
+    "sequelize": "^5.21.2"
+  },
+  "devDependencies": {
+    "@types/bluebird": "^3.5.29",
+    "@types/node": "^12.12.9",
+    "@types/validator": "^12.0.0",
+    "nodemon": "^1.19.4"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "version": "3.7.2",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "target": "es2018",
+    "module": "commonjs",
+    "moduleResolution": "node"
+  },
+  "include": ["./src/**/*"]
+}
