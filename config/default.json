@@ -1,0 +1,8 @@
+{
+  "db" : {
+    "host" : "localhost",
+    "dbName" : "social",
+    "username" : "admin_social",
+    "password" : "123456"
+  }
+}

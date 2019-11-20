@@ -1,0 +1,18 @@
+{
+  "dev": {
+    "driver": "pg",
+    "user": "admin_social",
+    "password": "123456",
+    "host": "localhost",
+    "database": "social",
+    "schema": "public"
+  },
+  "test": {
+    "driver": "pg",
+    "user": "admin_social",
+    "password": "123456",
+    "host": "localhost",
+    "database": "social_test",
+    "schema": "public"
+  }
+}
