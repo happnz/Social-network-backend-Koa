@@ -4,5 +4,6 @@
     "dbName" : "social",
     "username" : "admin_social",
     "password" : "123456"
-  }
+  },
+  "cookieName" : "SESSIONID"
 }

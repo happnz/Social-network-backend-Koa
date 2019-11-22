@@ -14,6 +14,7 @@ router.post("/sign-up", async (ctx) => {
 
     const savedUser = await User.create(ctx.request.body);
     ctx.body = savedUser;
+    ctx.login();
 });
 
 export default router;

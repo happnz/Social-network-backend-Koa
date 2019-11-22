@@ -2,9 +2,13 @@ import * as Koa from "koa";
 
 import * as logger from "koa-logger";
 import * as json from "koa-json";
-import * as bodyparser from "koa-bodyparser"
+import * as session from "koa-session2";
+import * as bodyparser from "koa-bodyparser";
 import authRouter from "./router/AuthRouter";
 import * as cors from "@koa/cors";
+import * as config from "config";
+import SessionStore from "./dao/config/SessionStore";
+import passport from "./config/PassportConfig";
 
 const app = new Koa();
 
@@ -15,6 +19,12 @@ if (process.env.NODE_ENV !== 'production') {
 app.use(json());
 app.use(logger());
 app.use(bodyparser());
+app.use(session({
+    key: config.get('cookieName'), //TODO replace config module with TS config const
+    store: new SessionStore()
+}));
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use(authRouter.routes());
 app.use(authRouter.allowedMethods());
