@@ -29,8 +29,6 @@ app.use(passport.session());
 app.use(authRouter.routes());
 app.use(authRouter.allowedMethods());
 
-app.listen(3000, () => {
+export default app.listen(3000, () => {
     console.log("Koa started");
 });
-
-export default app;

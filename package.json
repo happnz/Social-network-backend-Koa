@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "tsc && nodemon --watch ./index.js",
-    "debug": "tsc && nodemon --watch --inspect ./index.js",
-    "test": "tsc && jest"
+    "start": "nodemon --watch ./index.ts",
+    "debug": "nodemon --inspect ./src/index.ts",
+    "test": "mocha -r ts-node/register src/**/*.test.ts"
   },
   "author": "",
   "license": "ISC",
@@ -33,13 +33,20 @@
     "@babel/preset-env": "^7.7.1",
     "@babel/preset-typescript": "^7.7.2",
     "@types/bluebird": "^3.5.29",
+    "@types/chai": "^4.2.5",
+    "@types/chai-http": "^4.2.0",
+    "@types/chai-subset": "^1.3.3",
+    "@types/koa": "^2.0.52",
     "@types/mocha": "^5.2.7",
     "@types/node": "^12.12.9",
     "@types/validator": "^12.0.0",
     "babel-jest": "^24.9.0",
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
-    "jest": "^24.9.0",
-    "nodemon": "^1.19.4"
+    "chai-subset": "^1.6.0",
+    "mocha": "^6.2.2",
+    "nodemon": "^1.19.4",
+    "ts-node": "^8.5.2",
+    "typescript": "^3.7.2"
   }
 }

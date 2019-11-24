@@ -2,18 +2,29 @@ process.env.NODE_ENV = 'test';
 
 import server from '../../index';
 
-const chai = require('chai');
-chai.use(require('chai-http'));
-const jest = require("jest");
-const expect = jest.expect;
+import DBMigrate = require("db-migrate");
+import "mocha";
+import * as chai from "chai";
+import chaiHttp = require('chai-http');
+import chaiSubset = require("chai-subset");
+import {expect} from "chai";
 import * as config from "config";
 
+const dbMigrate = DBMigrate.getInstance(true, {
+    env: "test"
+});
+dbMigrate.silence(true);
+
+chai.use(chaiHttp);
+chai.use(chaiSubset);
+
 describe('AuthRouter', () => {
-    beforeEach(() => {
-        //TODO run migrations
+    beforeEach(async () => {
+        await dbMigrate.reset()
+            .then( () => dbMigrate.up() );
     });
 
-    it('should add a user', () => {
+    it('should add a user', async () => {
         let userBody = {
             email: 'email@email.com',
             name: 'userName',
@@ -21,18 +32,16 @@ describe('AuthRouter', () => {
             password: '123456'
         };
 
-        chai.request(server)
+        const res = await chai.request(server)
             .post('/sign-up')
-            .send(userBody)
-            .end((err, res) => {
-                expect(err).toBeFalsy();
-                expect(res.status).toBe(200);
-                expect(res.body).toMatchObject(userBody);
-                expect(res).to.have.cookie(config.get('cookieName'))
-            });
+            .send(userBody);
+
+        expect(res.status).to.equal(200);
+        expect(res.body).to.containSubset(userBody);
+        expect(res).to.have.cookie(config.get('cookieName'));
     });
 
-    it('should not add a user with invalid email', () => {
+    it('should not add a user with invalid email', async () => {
         let userBody = {
             email: 'emailemail.com',
             name: 'userName',
@@ -40,13 +49,12 @@ describe('AuthRouter', () => {
             password: '123456'
         };
 
-        chai.request(server)
+        const res = await chai.request(server)
             .post('/sign-up')
-            .send(userBody)
-            .end((err, res) => {
-                expect(err).toBeDefined();
-                expect(res.status).toBe(400);
-                expect(res).to.have.cookie(config.get('cookieName'));
-            });
-    })
+            .send(userBody);
+
+        expect(res.status).to.equal(400);
+        //TODO error list assertion
+        expect(res).to.not.have.cookie(config.get('cookieName'));
+    });
 });

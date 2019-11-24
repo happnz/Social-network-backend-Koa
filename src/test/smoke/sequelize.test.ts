@@ -1,11 +1,9 @@
-import {fail} from "assert";
-
 process.env.NODE_ENV = 'test';
 
 import sequelize from "../../dao/config/sequelizeConfig";
 
 describe('sequelize', () => {
-    it('should start up', async (done) => {
+    it('should start up', (done) => {
         sequelize
             .authenticate()
             .then(() => {
@@ -13,7 +11,7 @@ describe('sequelize', () => {
                 done();
             })
             .catch(err => {
-                fail(err);
+                throw new Error('Error initializing sequelize');
             });
     });
 });
