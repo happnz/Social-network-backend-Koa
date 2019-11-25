@@ -1,29 +1,32 @@
-import {Store} from "koa-session2";
 import sequelize from "./sequelizeConfig";
+import User from "../../model/User";
 
-export default class SessionStore extends Store {
-    constructor() {
-        super();
+export default class SessionStore {
+    async get(token, maxAge = 1000 * 60 * 60 * 24) {
+        let id = await sequelize.query('SELECT user_id FROM "sessions" WHERE token = $1', {
+            bind: [token], type: 'SELECT'
+        }).then((res: any) => res[0].user_id);
+        return {
+            user: await User.findOne({
+                where: {
+                    id: id
+                }
+            })
+        }
     }
 
-    async get(token) {
-        return await sequelize.query('SELECT user_id FROM "sessions" WHERE token = ?', {
-            replacements: token, type: 'SELECT'
-        });
-    }
-
-    async set(userId, { token =  super.getID(24), maxAge = 1000000 } = {}) {
+    async set(token, session, maxAge) {
         try {
             sequelize.query('INSERT INTO "sessions" (user_id, token) VALUES ($1, $2) ' +
-                'ON CONFLICT (user_id, token) DO UPDATE SET token = $2', {
-                bind: [userId, token],
+                'ON CONFLICT (user_id) DO UPDATE SET token = $2', {
+                bind: [session.passport.user, token],
                 type: 'UPSERT'
             });
         } catch (e) {}
         return token;
     }
 
-    async destroy(token, ctx) {
+    async destroy(token) {
         return await sequelize.query('DELETE FROM "sessions" WHERE token = ?', {
             replacements: token,
             type: 'DELETE'
