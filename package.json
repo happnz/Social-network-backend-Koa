@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon --watch ./index.ts",
+    "start": "nodemon --watch ./src/index.ts",
     "debug": "nodemon --inspect ./src/index.ts",
     "test": "mocha -r ts-node/register src/**/*.test.ts"
   },

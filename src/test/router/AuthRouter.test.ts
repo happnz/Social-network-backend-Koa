@@ -44,12 +44,12 @@ describe('AuthRouter', () => {
             expect(res).to.have.cookie(config.get('cookieName'));
         });
 
-        it('should not add a user with invalid email', async () => {
+        it('should not add a user with invalid email and short password', async () => {
             let userBody = {
                 email: 'emailemail.com',
                 name: 'userName',
                 lastName: 'userLastName',
-                password: '123456'
+                password: '12345'
             };
 
             const res = await chai.request(server)
@@ -57,7 +57,7 @@ describe('AuthRouter', () => {
                 .send(userBody);
 
             expect(res.status).to.equal(400);
-            //TODO error list assertion
+            expect(res.body.map(fieldError => fieldError.field)).to.deep.equal(['email', 'password']);
             expect(res).to.not.have.cookie(config.get('cookieName'));
         });
     });
