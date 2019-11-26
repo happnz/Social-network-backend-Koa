@@ -14,8 +14,8 @@ router.post("/sign-up", async (ctx) => {
     }
 
     const savedUser = await User.create(ctx.request.body);
+    await ctx.login(savedUser);
     ctx.body = savedUser;
-    //TODO sign-in
 });
 
 router.post("/sign-in", async (ctx) => {
@@ -40,11 +40,16 @@ router.use(async (ctx, next) => { //TODO fix workaround
 
 router.post("/sign-out", async (ctx) => {
     if (ctx.isAuthenticated()) {
-        ctx.logout();
+        signOut(ctx);
         ctx.body = {};
     } else {
         ctx.throw(401);
     }
 });
+
+function signOut(ctx) {
+    ctx.logout();
+    ctx.session = null;
+}
 
 export default router;

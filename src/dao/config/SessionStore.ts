@@ -27,8 +27,8 @@ export default class SessionStore {
     }
 
     async destroy(token) {
-        return await sequelize.query('DELETE FROM "sessions" WHERE token = ?', {
-            replacements: token,
+        return await sequelize.query('DELETE FROM "sessions" WHERE token = $1', {
+            bind: [token],
             type: 'DELETE'
         });
     }

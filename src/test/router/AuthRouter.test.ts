@@ -130,4 +130,37 @@ describe('AuthRouter', () => {
             expect(res2.status).to.equal(401);
         });
     });
+
+    describe('POST /sign-out', () => {
+        beforeEach(resetDb);
+
+       it('should remove cookie on sign-out for authenticated user', async () => {
+           let userBody = {
+               email: 'email@email.com',
+               name: 'userName',
+               lastName: 'userLastName',
+               password: '123456'
+           };
+
+           const res = await chai.request(server)
+               .post('/sign-up')
+               .send(userBody);
+
+           expect(res).to.have.cookie(config.get('cookieName'));
+
+           const res2 = await chai.request(server)
+               .post('/sign-out')
+               .send();
+
+           expect(res2).to.not.have.cookie(config.get('cookieName'));
+       });
+
+       it('should throw 401 for unauthenticated user', async () => {
+           const res = await chai.request(server)
+               .post('/sign-out')
+               .send();
+
+           expect(res.status).to.equal(401);
+       });
+    });
 });
