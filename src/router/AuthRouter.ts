@@ -1,5 +1,5 @@
 import * as Router from "koa-router";
-import {validateSchema, validationMiddleware} from "./validator/SchemaValidator";
+import {validationMiddleware} from "./validator/SchemaValidator";
 import signUpSchema from "./validator/UserSignUpSchema";
 import User from "../model/User";
 import * as passport from "koa-passport";
@@ -15,9 +15,7 @@ router.use(async (ctx, next) => { //TODO fix workaround
 });
 
 router.post("/sign-up", validationMiddleware(signUpSchema), async (ctx) => {
-    if (ctx.isAuthenticated()) {
-        ctx.throw(400);
-    }
+    ctx.assert(ctx.isUnauthenticated(), 401);
     const savedUser = await User.create(ctx.request.body);
     await ctx.login(savedUser);
     ctx.body = savedUser;
@@ -25,22 +23,16 @@ router.post("/sign-up", validationMiddleware(signUpSchema), async (ctx) => {
 
 router.post("/sign-in", async (ctx) => {
     return passport.authenticate('local', function(err, user, info, status) {
-        if (user === false) {
-            ctx.throw(401)
-        } else {
-            ctx.body = {};
-            return ctx.login(user)
-        }
+        ctx.assert(user, 401);
+        ctx.body = {};
+        return ctx.login(user)
     })(ctx);
 });
 
 router.post("/sign-out", async (ctx) => {
-    if (ctx.isAuthenticated()) {
-        signOut(ctx);
-        ctx.body = {};
-    } else {
-        ctx.throw(401);
-    }
+    ctx.assert(ctx.isAuthenticated(), 401);
+    signOut(ctx);
+    ctx.body = {};
 });
 
 function signOut(ctx) {
