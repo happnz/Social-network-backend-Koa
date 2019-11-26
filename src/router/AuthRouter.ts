@@ -1,18 +1,23 @@
 import * as Router from "koa-router";
-import {validate} from "./validator/SchemaValidator";
-import * as signUpSchema from "./validator/UserSignUpSchema";
+import {validateSchema, validationMiddleware} from "./validator/SchemaValidator";
+import signUpSchema from "./validator/UserSignUpSchema";
 import User from "../model/User";
 import * as passport from "koa-passport";
 
 const router = new Router();
 
-router.post("/sign-up", async (ctx) => {
-    const errors = validate(signUpSchema, ctx.request.body); //TODO middleware
-    if (Array.isArray(errors) && errors.length > 0) {
-        ctx.response.code = 400;
-        ctx.response.body = errors;
+router.use(async (ctx, next) => { //TODO fix workaround
+    if (ctx.session && ctx.session.user) {
+        ctx.state.user = ctx.session.user;
+        ctx.session.user = null;
     }
+    await next();
+});
 
+router.post("/sign-up", validationMiddleware(signUpSchema), async (ctx) => {
+    if (ctx.isAuthenticated()) {
+        ctx.throw(400);
+    }
     const savedUser = await User.create(ctx.request.body);
     await ctx.login(savedUser);
     ctx.body = savedUser;
@@ -27,15 +32,6 @@ router.post("/sign-in", async (ctx) => {
             return ctx.login(user)
         }
     })(ctx);
-});
-
-
-router.use(async (ctx, next) => { //TODO fix workaround
-    if (ctx.session && ctx.session.user) {
-        ctx.state.user = ctx.session.user;
-        ctx.session.user = null;
-    }
-    next();
 });
 
 router.post("/sign-out", async (ctx) => {

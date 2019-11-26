@@ -3,17 +3,25 @@ const schema = {
   "required" : ["name", "lastName", "email", "password"],
   "properties" : {
     "name" : {
-      "maxLength" : 50
+      "type" : "string",
+      "maxLength" : 50,
+      "minLength" : 1
     },
     "lastName" : {
-      "maxLength" : 50
+      "type" : "string",
+      "maxLength" : 50,
+      "minLength" : 1
     },
     "email" : {
+      "type" : "string",
       "maxLength" : 50,
+      "minLength" : 1,
       "format" : "email"
     },
     "password" : {
-      "maxLength" : 50
+      "type" : "string",
+      "maxLength" : 50,
+      "minLength" : 6
     }
   }
 };
