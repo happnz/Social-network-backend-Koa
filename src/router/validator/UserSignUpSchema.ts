@@ -1,6 +1,7 @@
 const schema = {
   "type" : "object",
   "required" : ["name", "lastName", "email", "password"],
+  "additionalProperties": false,
   "properties" : {
     "name" : {
       "type" : "string",

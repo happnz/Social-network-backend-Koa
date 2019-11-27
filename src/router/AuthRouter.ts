@@ -1,8 +1,8 @@
 import * as Router from "koa-router";
 import {validationMiddleware} from "./validator/SchemaValidator";
 import signUpSchema from "./validator/UserSignUpSchema";
-import User from "../model/User";
 import * as passport from "koa-passport";
+import UserService from "../service/UserService";
 
 const router = new Router();
 
@@ -16,7 +16,7 @@ router.use(async (ctx, next) => { //TODO fix workaround
 
 router.post("/sign-up", validationMiddleware(signUpSchema), async (ctx) => {
     ctx.assert(ctx.isUnauthenticated(), 401);
-    const savedUser = await User.create(ctx.request.body);
+    const savedUser = await UserService.saveUser(ctx.request.body);
     await ctx.login(savedUser);
     ctx.body = savedUser;
 });
