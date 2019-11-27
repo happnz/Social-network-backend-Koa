@@ -1,5 +1,6 @@
-import {DataTypes, Model} from "sequelize";
+import {Association, DataTypes, HasManyAddAssociationMixin, HasManyGetAssociationsMixin, Model} from "sequelize";
 import sequelize from "../dao/config/sequelizeConfig";
+import Friends from "./Friends";
 
 class User extends Model {
     public id!: number;
@@ -10,6 +11,13 @@ class User extends Model {
 
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
+
+    public getFriends!: HasManyGetAssociationsMixin<User>;
+    public addFriend!: HasManyAddAssociationMixin<User, number>;
+
+    public static associations: {
+        projects: Association<User, User>;
+    };
 }
 
 User.init({
@@ -39,6 +47,11 @@ User.init({
     sequelize: sequelize,
     timestamps: true,
     tableName: 'users'
+});
+
+User.belongsToMany(User, {
+    as: 'Friends',
+    through: Friends
 });
 
 export default User;
