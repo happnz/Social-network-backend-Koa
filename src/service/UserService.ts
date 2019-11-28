@@ -5,6 +5,7 @@ import UserProfilePublicResponse from "../router/response/UserProfilePublicRespo
 import UserProfileForFriendsResponse from "../router/response/UserProfileForFriendsResponse";
 import UserProfileForUsersResponse from "../router/response/UserProfileForUsersResponse";
 import FriendService from "./FriendService";
+import FriendResponse from "../router/response/internal/FriendResponse";
 
 export default class UserService {
     static async saveUser(userDto): Promise<UserPrivateInfoResponse> {
@@ -19,32 +20,56 @@ export default class UserService {
     }
 
     static async getUserProfileInfo(actor: User | null, userIdToRetrieve: number): Promise<UserProfilePublicResponse | UserProfileForFriendsResponse | UserProfileForUsersResponse> {
+        if (actor && actor.id === userIdToRetrieve) {
+            return this.getUserPersonalProfile(actor);
+        }
+
         return User.findOne({where: { id: userIdToRetrieve }})
             .then(user => {
                 if (!actor) {
                     return this.getProfilePublic(user);
-                } else if (FriendService.areFriends(actor, user)) {
-                    return this.getProfileForFriends(user);
                 } else {
-                    return this.getProfileForUsers(user);
+                    return FriendService.areFriends(actor, user)
+                        .then(areFriends => areFriends ? this.getProfileForFriends(user) : this.getProfileForUsers(user));
                 }
             });
     }
 
-    static getUserPersonalProfile(user: User): UserProfilePersonalResponse {
-        return new UserProfilePersonalResponse(user.id, user.name, user.lastName, [], [],[]); //TODO
+    private static async getUserPersonalProfile(user: User): Promise<UserProfilePersonalResponse> {
+        let userProfilePersonalResponse = new UserProfilePersonalResponse(user.id, user.name, user.lastName, [], [], []); //TODO posts
+        const friendsPromise = user.getFriends()
+            .then(friends => {
+                userProfilePersonalResponse.friends = friends.map(friend => new FriendResponse(friend.id, friend.name, friend.lastName));
+            });
+
+        const friendRequestsPromise = user.getIncomingFriendRequests()
+            .then(friendRequests => {
+                userProfilePersonalResponse.friendRequests = friendRequests.map(friendRequest =>
+                    new FriendResponse(friendRequest.id, friendRequest.name, friendRequest.lastName));
+            });
+
+        return Promise.all([friendsPromise, friendRequestsPromise])
+            .then(() => userProfilePersonalResponse);
     }
 
-    private static getProfilePublic(user: User): UserProfilePublicResponse {
+    private static async getProfilePublic(user: User): Promise<UserProfilePublicResponse> {
         return new UserProfilePublicResponse(user.id, user.name, user.lastName);
     }
 
-    private static getProfileForUsers(user: User): UserProfileForUsersResponse {
-        return new UserProfileForUsersResponse(user.id, user.name, user.lastName, []); //TODO
+    private static async getProfileForUsers(user: User): Promise<UserProfileForUsersResponse> {
+        return user.getFriends()
+            .then(friends =>
+                friends.map(friend =>
+                    new FriendResponse(friend.id, friend.name, friend.lastName)))
+            .then(friendsDto => new UserProfileForUsersResponse(user.id, user.name, user.lastName, friendsDto));
     }
 
-    private static getProfileForFriends(user: User): UserProfileForFriendsResponse {
-        return new UserProfileForFriendsResponse(user.id, user.name, user.lastName, [], []); //TODO
+    private static async getProfileForFriends(user: User): Promise<UserProfileForFriendsResponse> {
+        return user.getFriends()
+            .then(friends =>
+                friends.map(friend =>
+                    new FriendResponse(friend.id, friend.name, friend.lastName)))
+            .then(friendsDto => new UserProfileForFriendsResponse(user.id, user.name, user.lastName, friendsDto, [])); //TODO posts
     }
 
 }

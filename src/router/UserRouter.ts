@@ -7,12 +7,12 @@ const router = new Router();
 router.use(sessionSetterMiddleware());
 
 router.post('/users/:id/profile', async (ctx) => {
-    const id = +ctx.params.id;
+    let id = +ctx.params.id;
     if (id === 0) {
         if (ctx.isUnauthenticated()) {
             ctx.throw('Attempted to retrieve personal info for unauthorized user');
         } else {
-            UserService.getUserPersonalProfile(ctx.state.user);
+            id = ctx.state.user.id;
         }
     } else {
         ctx.body = await UserService.getUserProfileInfo(ctx.state.user, id);
