@@ -1,6 +1,5 @@
 import {Association, DataTypes, HasManyAddAssociationMixin, HasManyGetAssociationsMixin, Model} from "sequelize";
 import sequelize from "../dao/config/sequelizeConfig";
-import Friends from "./Friends";
 
 class User extends Model {
     public id!: number;
@@ -51,7 +50,9 @@ User.init({
 
 User.belongsToMany(User, {
     as: 'Friends',
-    through: Friends
+    through: 'friends',
+    foreignKey: 'userId',
+    otherKey: 'friendId'
 });
 
 export default User;

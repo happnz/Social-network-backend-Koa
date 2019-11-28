@@ -1,7 +1,5 @@
 CREATE TABLE friends (
-    "id" SERIAL PRIMARY KEY,
-    "user1Id" INTEGER NOT NULL,
-    "user2Id" INTEGER NOT NULL,
-    "createdAt" TIMESTAMP,
-    "updatedAt" TIMESTAMP
+    "userId" INTEGER NOT NULL REFERENCES users (id),
+    "friendId" INTEGER NOT NULL REFERENCES users (id),
+    PRIMARY KEY ("userId", "friendId")
 );
