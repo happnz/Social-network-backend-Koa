@@ -1,4 +1,11 @@
-import {Association, DataTypes, HasManyAddAssociationMixin, HasManyGetAssociationsMixin, Model} from "sequelize";
+import {
+    Association,
+    DataTypes,
+    HasManyAddAssociationMixin, HasManyCountAssociationsMixin,
+    HasManyGetAssociationsMixin,
+    HasManyHasAssociationMixin, HasManyRemoveAssociationMixin,
+    Model
+} from "sequelize";
 import sequelize from "../dao/config/sequelizeConfig";
 
 class User extends Model {
@@ -13,10 +20,13 @@ class User extends Model {
 
     public getFriends!: HasManyGetAssociationsMixin<User>;
     public addFriend!: HasManyAddAssociationMixin<User, number>;
+    public removeFriend!: HasManyRemoveAssociationMixin<User, number>;
+    public hasFriend!: HasManyHasAssociationMixin<User, number>;
+    public countFriends!: HasManyCountAssociationsMixin;
 
-    public static associations: {
-        projects: Association<User, User>;
-    };
+    public getIncomingFriendRequests!: HasManyGetAssociationsMixin<User>;
+    public addIncomingFriendRequest!: HasManyAddAssociationMixin<User, number>;
+    public countIncomingFriendRequests!: HasManyCountAssociationsMixin;
 }
 
 User.init({
@@ -53,6 +63,13 @@ User.belongsToMany(User, {
     through: 'friends',
     foreignKey: 'userId',
     otherKey: 'friendId'
+});
+
+User.belongsToMany(User, {
+    as: 'IncomingFriendRequests',
+    through: 'friendRequests',
+    foreignKey: 'toId',
+    otherKey: 'fromId'
 });
 
 export default User;

@@ -4,6 +4,7 @@ import UserProfilePersonalResponse from "../router/response/UserProfilePersonalR
 import UserProfilePublicResponse from "../router/response/UserProfilePublicResponse";
 import UserProfileForFriendsResponse from "../router/response/UserProfileForFriendsResponse";
 import UserProfileForUsersResponse from "../router/response/UserProfileForUsersResponse";
+import FriendService from "./FriendService";
 
 export default class UserService {
     static async saveUser(userDto): Promise<UserPrivateInfoResponse> {
@@ -22,7 +23,7 @@ export default class UserService {
             .then(user => {
                 if (!actor) {
                     return this.getProfilePublic(user);
-                } else if (this.areFriends(actor, user)) {
+                } else if (FriendService.areFriends(actor, user)) {
                     return this.getProfileForFriends(user);
                 } else {
                     return this.getProfileForUsers(user);
@@ -32,11 +33,6 @@ export default class UserService {
 
     static getUserPersonalProfile(user: User): UserProfilePersonalResponse {
         return new UserProfilePersonalResponse(user.id, user.name, user.lastName, [], [],[]); //TODO
-    }
-
-    private static areFriends(user1: User, user2: User): boolean {
-        //TODO
-        return false;
     }
 
     private static getProfilePublic(user: User): UserProfilePublicResponse {
