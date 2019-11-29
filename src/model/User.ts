@@ -26,6 +26,8 @@ class User extends Model {
 
     public getIncomingFriendRequests!: HasManyGetAssociationsMixin<User>;
     public addIncomingFriendRequest!: HasManyAddAssociationMixin<User, number>;
+    public hasIncomingFriendRequest!: HasManyHasAssociationMixin<User, number>;
+    public removeIncomingFriendRequest!: HasManyRemoveAssociationMixin<User, number>;
     public countIncomingFriendRequests!: HasManyCountAssociationsMixin;
 }
 

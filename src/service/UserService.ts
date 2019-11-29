@@ -7,6 +7,7 @@ import UserProfileForUsersResponse from "../router/response/UserProfileForUsersR
 import FriendService from "./FriendService";
 import FriendResponse from "../router/response/internal/FriendResponse";
 import NotFoundError from "../error/NotFoundError";
+import ServiceError from "../error/ServiceError";
 
 export default class UserService {
     static async saveUser(userDto): Promise<UserPrivateInfoResponse> {
@@ -38,6 +39,79 @@ export default class UserService {
                         .then(areFriends => areFriends ? this.getProfileForFriends(user) : this.getProfileForUsers(user));
                 }
             });
+    }
+
+    static async sendFriendRequest(actor: User, toId: number): Promise<void> {
+        const to = await this.findUserByIdOrThrow(toId);
+        this.assertFriendIdIsDifferent(actor.id, toId);
+
+        if (await FriendService.areFriends(actor, to)) {
+            throw new ServiceError('You are already friends with this user', 400);
+        } else if (await to.hasIncomingFriendRequest(actor)) {
+            throw new ServiceError('You already sent friend request to this user', 400);
+        } else {
+            return FriendService.createFriendRequest(actor, to);
+        }
+    }
+
+    static async cancelFriendRequest(actor: User, toId: number): Promise<void> {
+        const to = await this.findUserByIdOrThrow(toId);
+        this.assertFriendIdIsDifferent(actor.id, toId);
+
+        if (! await to.hasIncomingFriendRequest(actor)) {
+            throw new ServiceError('You have not sent request to that user', 400);
+        } else {
+            return FriendService.removeFriendRequest(actor, to);
+        }
+    }
+
+    static async acceptFriendRequest(actor: User, fromId: number): Promise<void> {
+        const from = await this.findUserByIdOrThrow(fromId);
+        this.assertFriendIdIsDifferent(actor.id, fromId);
+
+        if (! await actor.hasIncomingFriendRequest(from)) {
+            throw new ServiceError('Friend request from this user does not exist', 400);
+        }
+
+        await FriendService.createFriendRelation(actor, from);
+        await FriendService.removeFriendRequest(from, actor);
+    }
+
+    static async declineFriendRequest(actor: User, fromId: number): Promise<void> {
+        const from = await this.findUserByIdOrThrow(fromId);
+        this.assertFriendIdIsDifferent(actor.id, fromId);
+
+        if (! await actor.hasIncomingFriendRequest(from)) {
+            throw new ServiceError('You do not have friend request from this user', 400);
+        }
+
+        return FriendService.removeFriendRequest(from, actor);
+    }
+
+    static async removeFriendRelation(actor: User, friendId: number): Promise<void> {
+        const friend = await this.findUserByIdOrThrow(friendId);
+        this.assertFriendIdIsDifferent(actor.id, friendId);
+
+        if (! await FriendService.areFriends(actor, friend)) {
+            throw new ServiceError('You are not friends with this user', 400);
+        }
+
+        return FriendService.removeFriendRelation(actor, friend);
+    }
+
+    private static assertFriendIdIsDifferent(actorId: number, friendId: number) {
+        if (actorId === friendId) {
+            throw new ServiceError('Friend requests to oneself are prohibited', 400);
+        }
+    }
+
+    private static async findUserByIdOrThrow(id: number): Promise<User> {
+        const user = await User.findOne({where: {id: id}});
+        if (!user) {
+            throw new NotFoundError('User not found');
+        }
+
+        return user;
     }
 
     private static async getUserPersonalProfile(user: User): Promise<UserProfilePersonalResponse> {

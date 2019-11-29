@@ -11,8 +11,12 @@ export default class FriendService {
             .then(_ => user2.removeFriend(user1));
     }
 
-    static async friendRequest(from: User, to: User): Promise<void> {
+    static async createFriendRequest(from: User, to: User): Promise<void> {
         return to.addIncomingFriendRequest(from);
+    }
+
+    static async removeFriendRequest(from: User, to: User): Promise<void> {
+        return to.removeIncomingFriendRequest(from);
     }
 
     static async areFriends(user1: User, user2: User): Promise<boolean> {
