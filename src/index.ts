@@ -17,9 +17,21 @@ if (process.env.NODE_ENV !== 'production') {
     app.use(cors({origin: 'http://localhost:4200'}))
 }
 
+app.use(logger());
+app.use(async (ctx, next) => {
+    try {
+        await next();
+    } catch (err) {
+        ctx.status = err.status || 500;
+        ctx.body = err.message;
+        if (ctx.status >= 500) {
+            ctx.app.emit('error', err, ctx);
+        }
+    }
+});
+
 app.proxy = true;
 app.use(json());
-app.use(logger());
 app.use(bodyparser());
 app.keys = ['super-secret-key']; //TODO
 app.use(session({
