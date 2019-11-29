@@ -6,6 +6,7 @@ import UserProfileForFriendsResponse from "../router/response/UserProfileForFrie
 import UserProfileForUsersResponse from "../router/response/UserProfileForUsersResponse";
 import FriendService from "./FriendService";
 import FriendResponse from "../router/response/internal/FriendResponse";
+import NotFoundError from "../error/NotFoundError";
 
 export default class UserService {
     static async saveUser(userDto): Promise<UserPrivateInfoResponse> {
@@ -26,6 +27,10 @@ export default class UserService {
 
         return User.findOne({where: { id: userIdToRetrieve }})
             .then(user => {
+                if (!user) {
+                    throw new NotFoundError('User not found');
+                }
+
                 if (!actor) {
                     return this.getProfilePublic(user);
                 } else {

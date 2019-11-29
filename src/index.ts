@@ -5,6 +5,7 @@ import * as json from "koa-json";
 import * as session from "koa-session";
 import * as bodyparser from "koa-bodyparser";
 import authRouter from "./router/AuthRouter";
+import userRouter from "./router/UserRouter";
 import * as cors from "@koa/cors";
 import * as config from "config";
 import SessionStore from "./dao/config/SessionStore";
@@ -31,6 +32,8 @@ app.use(passport.session());
 
 app.use(authRouter.routes());
 app.use(authRouter.allowedMethods());
+app.use(userRouter.routes());
+app.use(userRouter.allowedMethods());
 
 export default app.listen(3000, () => {
     console.log("Koa started");

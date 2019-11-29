@@ -12,6 +12,7 @@ import FriendResponse from "../../router/response/internal/FriendResponse";
 import UserProfileForUsersResponse from "../../router/response/UserProfileForUsersResponse";
 import UserProfilePublicResponse from "../../router/response/UserProfilePublicResponse";
 import UserProfilePersonalResponse from "../../router/response/UserProfilePersonalResponse";
+import NotFoundError from "../../error/NotFoundError";
 
 describe('UserService', () => {
    const userToRetrieve1 = {
@@ -93,5 +94,13 @@ describe('UserService', () => {
              [new FriendResponse(3, "Bob", "Bobby")], [], //TODO posts
              [new FriendResponse(2, "Jack", "Jackson")]));
       });
+
+       it('should throw NotFoundError if id user with userToRetrieveId does not exist', async () => {
+           try {
+               const res = await UserService.getUserProfileInfo(actor, 1000);
+           } catch (e) {
+               expect(e).to.be.instanceOf(NotFoundError);
+           }
+       });
    });
 });

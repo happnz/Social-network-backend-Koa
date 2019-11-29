@@ -6,7 +6,7 @@ const router = new Router();
 
 router.use(sessionSetterMiddleware());
 
-router.post('/users/:id/profile', async (ctx) => {
+router.get('/users/:id/profile', async (ctx) => {
     let id = +ctx.params.id;
     if (id === 0) {
         if (ctx.isUnauthenticated()) {
@@ -14,7 +14,8 @@ router.post('/users/:id/profile', async (ctx) => {
         } else {
             id = ctx.state.user.id;
         }
-    } else {
-        ctx.body = await UserService.getUserProfileInfo(ctx.state.user, id);
     }
+    ctx.body = await UserService.getUserProfileInfo(ctx.state.user, id);
 });
+
+export default router;
