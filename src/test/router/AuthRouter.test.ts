@@ -21,7 +21,7 @@ chai.use(chaiSubset);
 describe('AuthRouter', () => {
     async function resetDb() {
         await dbMigrate.reset()
-            .then(() => dbMigrate.up());
+            .then(() => dbMigrate.up(2));
     }
 
     describe('POST /sign-up', () => {

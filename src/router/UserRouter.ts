@@ -1,6 +1,8 @@
 import * as Router from "koa-router";
 import {sessionSetterMiddleware} from "./utils/AuthUtils";
 import UserService from "../service/UserService";
+import {validationMiddleware} from "./validator/SchemaValidator";
+import postValidator from './validator/PostValidator';
 
 const router = new Router();
 
@@ -10,7 +12,7 @@ router.get('/users/:id/profile', async (ctx) => {
     let id = +ctx.params.id;
     if (id === 0) {
         if (ctx.isUnauthenticated()) {
-            ctx.throw('Attempted to retrieve personal info for unauthorized user');
+            ctx.throw(401, 'Attempted to retrieve personal info for unauthorized user');
         } else {
             id = ctx.state.user.id;
         }
@@ -57,5 +59,27 @@ router.delete('/friends/:id', async (ctx) => {
     await UserService.removeFriendRelation(ctx.state.user, friendId);
     ctx.body = {};
 });
+
+router.post('/posts', validationMiddleware(postValidator), async (ctx) => {
+    ctx.assert(ctx.isAuthenticated(), 401);
+    ctx.body = await UserService.createNewPost(ctx.state.user, ctx.request.body);
+});
+
+router.put('/posts/:id', validationMiddleware(postValidator), async (ctx) => {
+    ctx.assert(ctx.isAuthenticated(), 401);
+    ctx.assert(ctx.params.id, 400, 'id must be provided');
+    const postId = +ctx.params.id;
+    await UserService.updatePost(ctx.state.user, postId, ctx.request.body);
+    ctx.body = {};
+});
+
+router.delete('/posts/:id', async (ctx) => {
+    ctx.assert(ctx.isAuthenticated(), 401);
+    ctx.assert(ctx.params.id, 400, 'id must be provided');
+    const postId = +ctx.params.id;
+    await UserService.deletePost(ctx.state.user, postId);
+    ctx.body = {};
+});
+
 
 export default router;
