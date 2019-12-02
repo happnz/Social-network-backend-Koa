@@ -13,6 +13,7 @@ import UserProfileForUsersResponse from "../../router/response/UserProfileForUse
 import UserProfilePublicResponse from "../../router/response/UserProfilePublicResponse";
 import UserProfilePersonalResponse from "../../router/response/UserProfilePersonalResponse";
 import NotFoundError from "../../error/NotFoundError";
+import ServiceError from "../../error/ServiceError";
 
 describe('UserService', () => {
    const userToRetrieve1 = {
@@ -23,6 +24,9 @@ describe('UserService', () => {
       lastName: "Jackson",
       async getFriends() {
          return [userToRetrieve2];
+      },
+      async hasIncomingFriendRequest(user: User) {
+         return true;
       }
    } as User;
 
@@ -45,6 +49,9 @@ describe('UserService', () => {
       },
       async getIncomingFriendRequests() {
          return [userToRetrieve1]
+      },
+      async hasIncomingFriendRequest(user: User) {
+         return true;
       }
    } as User;
 
@@ -103,4 +110,126 @@ describe('UserService', () => {
            }
        });
    });
+
+   describe('#sendFriendRequest()', () => {
+      beforeEach(() => {
+         sinon.restore();
+      });
+
+      it('should throw ServiceError if sent to user with the same id', async () => {
+         sinon.stub(UserService, 'findUserByIdOrThrow')
+             .withArgs(1)
+             .resolves(actor);
+
+         try {
+            await UserService.sendFriendRequest(actor, 1);
+         } catch (e) {
+            expect(e).to.be.instanceOf(ServiceError);
+            expect(e.message).to.equal('Friend requests to oneself are prohibited');
+            expect(e.status).to.equal(400);
+         }
+      });
+
+      it('should throw ServiceError if are already friends', async () => {
+         sinon.stub(FriendService, 'areFriends')
+             .resolves(true);
+
+         sinon.stub(UserService, 'findUserByIdOrThrow')
+             .withArgs(2)
+             .resolves(userToRetrieve1);
+
+         try {
+            await UserService.sendFriendRequest(actor, 2);
+         } catch (e) {
+            expect(e).to.be.instanceOf(ServiceError);
+            expect(e.message).to.equal('You are already friends with this user');
+            expect(e.status).to.equal(400);
+         }
+      });
+
+      it('should throw ServiceError if already sent to this user', async () => {
+         sinon.stub(FriendService, 'areFriends')
+             .resolves(false);
+
+         sinon.stub(userToRetrieve1, 'hasIncomingFriendRequest')
+             .resolves(true);
+
+         sinon.stub(UserService, 'findUserByIdOrThrow')
+             .withArgs(2)
+             .resolves(userToRetrieve1);
+
+         try {
+            await UserService.sendFriendRequest(actor, 2);
+         } catch (e) {
+            expect(e).to.be.instanceOf(ServiceError);
+            expect(e.message).to.equal('You already sent friend request to this user');
+            expect(e.status).to.equal(400);
+         }
+      });
+
+
+      it('should succeed', async () => {
+         sinon.stub(FriendService, 'areFriends')
+             .resolves(false);
+
+         sinon.stub(userToRetrieve1, 'hasIncomingFriendRequest')
+             .resolves(false);
+
+         sinon.stub(UserService, 'findUserByIdOrThrow')
+             .withArgs(2)
+             .resolves(userToRetrieve1);
+
+         sinon.stub(FriendService, 'createFriendRequest')
+             .withArgs(actor, userToRetrieve1)
+             .resolves(undefined);
+
+         await UserService.sendFriendRequest(actor, 2);
+      });
+   });
+
+   describe('#cancelFriendRequest()', () => {
+      beforeEach(() => {
+         sinon.restore();
+      });
+
+      it('should throw ServiceError if not sent to this user', async () => {
+         sinon.stub(FriendService, 'areFriends')
+             .resolves(false);
+
+         sinon.stub(userToRetrieve1, 'hasIncomingFriendRequest')
+             .resolves(false);
+
+         sinon.stub(UserService, 'findUserByIdOrThrow')
+             .withArgs(2)
+             .resolves(userToRetrieve1);
+
+         try {
+            await UserService.cancelFriendRequest(actor, 2);
+         } catch (e) {
+            expect(e).to.be.instanceOf(ServiceError);
+            expect(e.message).to.equal('You have not sent request to that user');
+            expect(e.status).to.equal(400);
+         }
+      });
+
+
+      it('should succeed', async () => {
+         sinon.stub(FriendService, 'areFriends')
+             .resolves(false);
+
+         sinon.stub(userToRetrieve1, 'hasIncomingFriendRequest')
+             .resolves(true);
+
+         sinon.stub(UserService, 'findUserByIdOrThrow')
+             .withArgs(2)
+             .resolves(userToRetrieve1);
+
+         sinon.stub(FriendService, 'removeFriendRequest')
+             .withArgs(actor, userToRetrieve1)
+             .resolves(undefined);
+
+         await UserService.cancelFriendRequest(actor, 2);
+      });
+   });
+
 });
