@@ -14,7 +14,7 @@ import * as passport from "koa-passport";
 const app = new Koa();
 
 if (process.env.NODE_ENV !== 'production') {
-    app.use(cors({origin: 'http://localhost:4200'}))
+    app.use(cors({origin: 'http://localhost:4200', credentials: true}))
 }
 
 app.use(logger());
