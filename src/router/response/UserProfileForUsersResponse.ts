@@ -3,7 +3,7 @@ import UserProfilePublicResponse from "./UserProfilePublicResponse";
 import {Relation} from "./Relation";
 
 export default class UserProfileForUsersResponse extends UserProfilePublicResponse {
-    public relation: Relation;
+    public relation: string;
 
     constructor(
         id: number,

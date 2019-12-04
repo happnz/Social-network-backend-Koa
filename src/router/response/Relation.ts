@@ -1,5 +1,5 @@
 export enum Relation {
-    FRIEND,
-    PERSONAL,
-    USER
+    FRIEND = 'FRIEND',
+    PERSONAL = 'PERSONAL',
+    USER = 'USER'
 }
