@@ -1,8 +1,10 @@
 import FriendResponse from "./internal/FriendResponse";
 import UserProfilePublicResponse from "./UserProfilePublicResponse";
-import PostResponse from "./internal/PostResponse";
+import {Relation} from "./Relation";
 
 export default class UserProfileForUsersResponse extends UserProfilePublicResponse {
+    public relation: Relation;
+
     constructor(
         id: number,
         name: string,
@@ -10,5 +12,6 @@ export default class UserProfileForUsersResponse extends UserProfilePublicRespon
         public friends: FriendResponse[]
     ) {
         super(id, name, lastName);
+        this.relation = Relation.USER;
     }
 }
