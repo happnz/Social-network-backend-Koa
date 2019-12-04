@@ -8,6 +8,8 @@ import FriendService from "./FriendService";
 import FriendResponse from "../router/response/internal/FriendResponse";
 import NotFoundError from "../error/NotFoundError";
 import ServiceError from "../error/ServiceError";
+import Post from "../model/Post";
+import PostResponse from "../router/response/internal/PostResponse";
 
 export default class UserService {
     static async saveUser(userDto): Promise<UserPrivateInfoResponse> {
@@ -99,6 +101,37 @@ export default class UserService {
         return FriendService.removeFriendRelation(actor, friend);
     }
 
+
+    static async createNewPost(user: User, requestBody): Promise<PostResponse> {
+        return user.createPost({
+            text: requestBody.text
+        })
+            .then(post => {
+                return new PostResponse(post.id, post.text, post.createdAt, post.updatedAt);
+            });
+    }
+
+    static async updatePost(user: User, postId: number, requestBody): Promise<PostResponse> {
+        return Post.findOne({ where: { id: postId}})
+            .then(post => {
+                if (!post || !user.hasPost(post)) {
+                    throw new ServiceError('You are not the author of this post', 400);
+                }
+
+                return post.update({ text: requestBody.text})
+                    .then(updatedPost =>
+                        new PostResponse(updatedPost.id, updatedPost.text, updatedPost.createdAt, updatedPost.updatedAt));
+            });
+    }
+
+    static async deletePost(user: User, postId: number): Promise<void> {
+        if (! await user.hasPost(postId)) {
+            throw new ServiceError('You are not the author of this post', 400);
+        }
+
+        return user.removePost(postId);
+    }
+
     private static assertFriendIdIsDifferent(actorId: number, friendId: number) {
         if (actorId === friendId) {
             throw new ServiceError('Friend requests to oneself are prohibited', 400);
@@ -115,7 +148,7 @@ export default class UserService {
     }
 
     private static async getUserPersonalProfile(user: User): Promise<UserProfilePersonalResponse> {
-        let userProfilePersonalResponse = new UserProfilePersonalResponse(user.id, user.name, user.lastName, [], [], []); //TODO posts
+        let userProfilePersonalResponse = new UserProfilePersonalResponse(user.id, user.name, user.lastName, [], [], []);
         const friendsPromise = user.getFriends()
             .then(friends => {
                 userProfilePersonalResponse.friends = friends.map(friend => new FriendResponse(friend.id, friend.name, friend.lastName));
@@ -127,7 +160,15 @@ export default class UserService {
                     new FriendResponse(friendRequest.id, friendRequest.name, friendRequest.lastName));
             });
 
-        return Promise.all([friendsPromise, friendRequestsPromise])
+        const postsPromise = user.getPosts({
+            order: [['createdAt', 'DESC']]
+        })
+            .then(posts => {
+                userProfilePersonalResponse.posts = posts
+                    .map(post => new PostResponse(post.id, post.text, post.createdAt, post.updatedAt));
+            });
+
+        return Promise.all([friendsPromise, friendRequestsPromise, postsPromise])
             .then(() => userProfilePersonalResponse);
     }
 
@@ -144,11 +185,21 @@ export default class UserService {
     }
 
     private static async getProfileForFriends(user: User): Promise<UserProfileForFriendsResponse> {
-        return user.getFriends()
-            .then(friends =>
-                friends.map(friend =>
-                    new FriendResponse(friend.id, friend.name, friend.lastName)))
-            .then(friendsDto => new UserProfileForFriendsResponse(user.id, user.name, user.lastName, friendsDto, [])); //TODO posts
-    }
+        let userProfileForFriendsResponse = new UserProfileForFriendsResponse(user.id, user.name, user.lastName, [], []);
+        const friendsPromise = user.getFriends()
+            .then(friends => {
+                userProfileForFriendsResponse.friends = friends.map(friend => new FriendResponse(friend.id, friend.name, friend.lastName));
+            });
 
+        const postsPromise = user.getPosts({
+            order: [['createdAt', 'DESC']]
+        })
+            .then(posts => {
+                userProfileForFriendsResponse.posts = posts
+                    .map(post => new PostResponse(post.id, post.text, post.createdAt, post.updatedAt))
+            });
+
+        return Promise.all([friendsPromise, postsPromise])
+            .then(() => userProfileForFriendsResponse);
+    }
 }
