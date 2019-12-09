@@ -28,4 +28,4 @@ Post.init({
 });
 
 User.hasMany(Post, {as: 'Posts', foreignKey: 'userId', sourceKey: 'id'});
-Post.belongsTo(User, {as: 'Users', foreignKey: 'userId', targetKey: 'id'});
+Post.belongsTo(User, {as: 'User', foreignKey: 'userId', targetKey: 'id'});
