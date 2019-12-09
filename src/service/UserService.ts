@@ -10,6 +10,8 @@ import NotFoundError from "../error/NotFoundError";
 import ServiceError from "../error/ServiceError";
 import Post from "../model/Post";
 import PostResponse from "../router/response/internal/PostResponse";
+import UserDao from "../dao/UserDao";
+import Pagination from "../router/utils/Pagination";
 
 export default class UserService {
     static async saveUser(userDto): Promise<UserPrivateInfoResponse> {
@@ -201,5 +203,14 @@ export default class UserService {
 
         return Promise.all([friendsPromise, postsPromise])
             .then(() => userProfileForFriendsResponse);
+    }
+
+    static async getFriendsNews(user: User, pageSize: number, pageNumber: number): Promise<PostResponse[]> {
+        return UserDao.findFriendsPosts(user.id, new Pagination(
+            pageSize,
+            pageNumber,
+            'createdAt',
+            'DESC'))
+            .then(posts => posts.map(post => new PostResponse(post.id, post.text, post.createdAt, post.updatedAt)));
     }
 }

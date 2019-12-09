@@ -1,8 +1,9 @@
 import * as Router from "koa-router";
 import {sessionSetterMiddleware} from "./utils/AuthUtils";
 import UserService from "../service/UserService";
-import {validationMiddleware} from "./validator/SchemaValidator";
+import {parsePaginationQuery, validateSchema, validationMiddleware} from "./validator/SchemaValidator";
 import postValidator from './validator/PostValidator';
+import Pagination from "./utils/Pagination";
 
 const router = new Router();
 
@@ -79,6 +80,13 @@ router.delete('/posts/:id', async (ctx) => {
     const postId = +ctx.params.id;
     await UserService.deletePost(ctx.state.user, postId);
     ctx.body = {};
+});
+
+router.get('/news', async (ctx) => {
+    ctx.assert(ctx.isAuthenticated(), 401);
+    const paginationQuery = ctx.request.query;
+    const pagination = parsePaginationQuery(paginationQuery, []);
+    ctx.body = await UserService.getFriendsNews(ctx.state.user, pagination.pageSize, pagination.pageNumber);
 });
 
 
