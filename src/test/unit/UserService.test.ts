@@ -14,6 +14,8 @@ import UserProfilePublicResponse from "../../router/response/UserProfilePublicRe
 import UserProfilePersonalResponse from "../../router/response/UserProfilePersonalResponse";
 import NotFoundError from "../../error/NotFoundError";
 import ServiceError from "../../error/ServiceError";
+import Post from "../../model/Post";
+import PostResponse from "../../router/response/internal/PostResponse";
 
 describe('UserService', () => {
    const userToRetrieve1 = {
@@ -27,6 +29,9 @@ describe('UserService', () => {
       },
       async hasIncomingFriendRequest(user: User) {
          return true;
+      },
+      async getPosts() {
+         return [];
       }
    } as User;
 
@@ -52,6 +57,9 @@ describe('UserService', () => {
       },
       async hasIncomingFriendRequest(user: User) {
          return true;
+      },
+      async getPosts() {
+         return [];
       }
    } as User;
 
@@ -63,6 +71,7 @@ describe('UserService', () => {
 
    describe('#getUserProfileInfo()', () => {
       let areFriendsStub;
+      let posts = [new Post({ id: 1, text: 'Text'})];
       beforeEach(() => {
          sinon.restore();
          sinon.stub(User, 'findOne').callsFake(async (arg) => testUserMap.get(arg.where.id));
@@ -72,10 +81,13 @@ describe('UserService', () => {
          areFriendsStub = sinon.stub(FriendService, 'areFriends')
              .withArgs(actor, userToRetrieve1).resolves(true);
 
+         sinon.stub(userToRetrieve1, 'getPosts')
+             .resolves(posts);
+
          const res = await UserService.getUserProfileInfo(actor, userToRetrieve1.id);
 
          expect(res).to.deep.equal(new UserProfileForFriendsResponse(2, "Jack", "Jackson",
-             [new FriendResponse(3, "Bob", "Bobby")], [])); //TODO posts
+             [new FriendResponse(3, "Bob", "Bobby")], posts.map(post => new PostResponse(post.id, post.text, post.createdAt, post.updatedAt))));
       });
 
       it('should return UserProfileForUsersResponse if FriendService.areFriends is false', async () => {
@@ -95,10 +107,13 @@ describe('UserService', () => {
       });
 
       it('should return UserProfilePersonalResponse if actor.id === userToRetrieveId', async () => {
+         sinon.stub(actor, 'getPosts')
+             .resolves(posts);
+
          const res = await UserService.getUserProfileInfo(actor, actor.id);
 
          expect(res).to.deep.equal(new UserProfilePersonalResponse(1, "John", "Johnson",
-             [new FriendResponse(3, "Bob", "Bobby")], [], //TODO posts
+             [new FriendResponse(3, "Bob", "Bobby")], posts.map(post => new PostResponse(post.id, post.text, post.createdAt, post.updatedAt)),
              [new FriendResponse(2, "Jack", "Jackson")]));
       });
 

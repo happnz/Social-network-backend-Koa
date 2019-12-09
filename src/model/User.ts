@@ -1,12 +1,12 @@
 import {
-    Association,
     DataTypes,
-    HasManyAddAssociationMixin, HasManyCountAssociationsMixin,
+    HasManyAddAssociationMixin, HasManyCountAssociationsMixin, HasManyCreateAssociationMixin,
     HasManyGetAssociationsMixin,
     HasManyHasAssociationMixin, HasManyRemoveAssociationMixin,
     Model
 } from "sequelize";
 import sequelize from "../dao/config/sequelizeConfig";
+import Post from "./Post";
 
 class User extends Model {
     public id!: number;
@@ -29,6 +29,12 @@ class User extends Model {
     public hasIncomingFriendRequest!: HasManyHasAssociationMixin<User, number>;
     public removeIncomingFriendRequest!: HasManyRemoveAssociationMixin<User, number>;
     public countIncomingFriendRequests!: HasManyCountAssociationsMixin;
+
+    public getPosts!: HasManyGetAssociationsMixin<Post>;
+    public createPost!: HasManyCreateAssociationMixin<Post>;
+    public hasPost!: HasManyHasAssociationMixin<Post, number>;
+    public removePost!: HasManyRemoveAssociationMixin<Post, number>;
+    public countPosts!: HasManyCountAssociationsMixin;
 }
 
 User.init({
