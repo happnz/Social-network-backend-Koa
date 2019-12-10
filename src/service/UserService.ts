@@ -10,6 +10,7 @@ import NotFoundError from "../error/NotFoundError";
 import ServiceError from "../error/ServiceError";
 import Post from "../model/Post";
 import PostResponse from "../router/response/internal/PostResponse";
+import sequelize from "../dao/config/sequelizeConfig";
 
 export default class UserService {
     static async saveUser(userDto): Promise<UserPrivateInfoResponse> {
@@ -68,15 +69,17 @@ export default class UserService {
     }
 
     static async acceptFriendRequest(actor: User, fromId: number): Promise<void> {
-        const from = await this.findUserByIdOrThrow(fromId);
-        this.assertFriendIdIsDifferent(actor.id, fromId);
+        sequelize.transaction(async (t) => {
+            const from = await this.findUserByIdOrThrow(fromId);
+            this.assertFriendIdIsDifferent(actor.id, fromId);
 
-        if (! await actor.hasIncomingFriendRequest(from)) {
-            throw new ServiceError('Friend request from this user does not exist', 400);
-        }
+            if (!await actor.hasIncomingFriendRequest(from)) {
+                throw new ServiceError('Friend request from this user does not exist', 400);
+            }
 
-        await FriendService.createFriendRelation(actor, from);
-        await FriendService.removeFriendRequest(from, actor);
+            await FriendService.createFriendRelation(actor, from);
+            await FriendService.removeFriendRequest(from, actor);
+        });
     }
 
     static async declineFriendRequest(actor: User, fromId: number): Promise<void> {

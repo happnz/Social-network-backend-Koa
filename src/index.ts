@@ -10,6 +10,7 @@ import * as cors from "@koa/cors";
 import * as config from "config";
 import SessionStore from "./dao/config/SessionStore";
 import * as passport from "koa-passport";
+import {Sequelize} from "sequelize";
 
 const app = new Koa();
 
@@ -29,6 +30,10 @@ app.use(async (ctx, next) => {
         }
     }
 });
+
+const cls = require('cls-hooked');
+const namespace = cls.createNamespace('transaction-namespace');
+Sequelize.useCLS(namespace);
 
 app.proxy = true;
 app.use(json());
