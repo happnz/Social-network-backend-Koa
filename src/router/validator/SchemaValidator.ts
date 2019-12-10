@@ -1,4 +1,6 @@
 import * as Ajv from "ajv";
+import Pagination from "../utils/Pagination";
+import PaginationQuery from "../utils/PaginationQuery";
 const ajv = new Ajv({allErrors: true});
 
 export function validateSchema(schema: any, data: any) {
@@ -22,4 +24,21 @@ export function validationMiddleware(schema) {
             await next();
         }
     }
+}
+
+export function parsePaginationQuery(paginationQuery: PaginationQuery, allowedSortByValues: string[]): Pagination {
+    if (isNaN(paginationQuery.pageSize) || paginationQuery.pageSize < 1) {
+        paginationQuery.pageSize = 10;
+    }
+    if (isNaN(paginationQuery.pageNumber) || paginationQuery.pageNumber < 1) {
+        paginationQuery.pageNumber = 1;
+    }
+    if (!paginationQuery.sortDirection || paginationQuery.sortDirection != 'ASC' && paginationQuery.sortDirection != 'DESC') {
+        paginationQuery.sortDirection = 'ASC';
+    }
+    if (!paginationQuery.sortBy || !allowedSortByValues.includes(paginationQuery.sortBy)) {
+        paginationQuery.sortBy = 'id';
+    }
+
+    return new Pagination(+paginationQuery.pageSize, +paginationQuery.pageNumber, paginationQuery.sortBy, paginationQuery.sortDirection);
 }

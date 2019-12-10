@@ -11,6 +11,9 @@ import ServiceError from "../error/ServiceError";
 import Post from "../model/Post";
 import PostResponse from "../router/response/internal/PostResponse";
 import sequelize from "../dao/config/sequelizeConfig";
+import UserDao from "../dao/UserDao";
+import Pagination from "../router/utils/Pagination";
+import PostWithAuthorResponse from "../router/response/internal/PostWithAuthorResponse";
 
 export default class UserService {
     static async saveUser(userDto): Promise<UserPrivateInfoResponse> {
@@ -133,6 +136,23 @@ export default class UserService {
         }
 
         return user.removePost(postId);
+    }
+
+    static async getFriendsNews(user: User, pageSize: number, pageNumber: number): Promise<PostWithAuthorResponse[]> {
+        let response: PostWithAuthorResponse[] = [];
+
+        let posts = await UserDao.findFriendsPosts(user.id, new Pagination(
+            pageSize,
+            pageNumber,
+            'createdAt',
+            'DESC'));
+
+        for (const post of posts) {
+            const user = await post.getUser();
+            response.push(new PostWithAuthorResponse(post.id, post.text, post.createdAt, post.updatedAt, new FriendResponse(user.id, user.name, user.lastName)));
+        }
+
+        return response;
     }
 
     private static assertFriendIdIsDifferent(actorId: number, friendId: number) {
