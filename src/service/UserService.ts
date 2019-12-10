@@ -135,6 +135,23 @@ export default class UserService {
         return user.removePost(postId);
     }
 
+    static async getFriendsNews(user: User, pageSize: number, pageNumber: number): Promise<PostWithAuthorResponse[]> {
+        let response: PostWithAuthorResponse[] = [];
+
+        let posts = await UserDao.findFriendsPosts(user.id, new Pagination(
+            pageSize,
+            pageNumber,
+            'createdAt',
+            'DESC'));
+
+        for (const post of posts) {
+            const user = await post.getUser();
+            response.push(new PostWithAuthorResponse(post.id, post.text, post.createdAt, post.updatedAt, new FriendResponse(user.id, user.name, user.lastName)));
+        }
+
+        return response;
+    }
+
     private static assertFriendIdIsDifferent(actorId: number, friendId: number) {
         if (actorId === friendId) {
             throw new ServiceError('Friend requests to oneself are prohibited', 400);
@@ -204,22 +221,5 @@ export default class UserService {
 
         return Promise.all([friendsPromise, postsPromise])
             .then(() => userProfileForFriendsResponse);
-    }
-
-    static async getFriendsNews(user: User, pageSize: number, pageNumber: number): Promise<PostWithAuthorResponse[]> {
-        let response: PostWithAuthorResponse[] = [];
-
-        let posts = await UserDao.findFriendsPosts(user.id, new Pagination(
-            pageSize,
-            pageNumber,
-            'createdAt',
-            'DESC'));
-
-        for (const post of posts) {
-            const user = await post.getUser(); //TODO fix not a function
-            response.push(new PostWithAuthorResponse(post.id, post.text, post.createdAt, post.updatedAt, new FriendResponse(user.id, user.name, user.lastName)));
-        }
-
-        return response;
     }
 }
