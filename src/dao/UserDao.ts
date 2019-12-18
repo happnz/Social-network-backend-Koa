@@ -2,6 +2,8 @@ import sequelize from "./config/sequelizeConfig";
 import Post from "../model/Post";
 import Pagination from "../router/utils/Pagination";
 import {Op} from "sequelize";
+import UserSearchQuery from "../router/query/UserSearchQuery";
+import User from "../model/User";
 
 export default class UserDao {
     static findFriendsPosts(userId: number, pagination: Pagination): Promise<Post[]> {
@@ -19,6 +21,22 @@ export default class UserDao {
                 limit: pagination.pageSize,
                 offset: pagination.offset
             })
+        });
+    }
+
+    static findUsers(userSearchQuery: UserSearchQuery, pagination: Pagination): Promise<{ rows: User[], count: number }> {
+        return User.findAndCountAll<User>({
+            where: {
+                name: {
+                    [Op.startsWith]: userSearchQuery.name || ''
+                },
+                lastName: {
+                    [Op.startsWith]: userSearchQuery.lastName || ''
+                }
+            },
+            order: [[pagination.sortBy, pagination.sortDirection]],
+            limit: pagination.pageSize,
+            offset: pagination.offset
         });
     }
 }

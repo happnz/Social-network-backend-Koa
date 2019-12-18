@@ -4,6 +4,7 @@ import UserService from "../service/UserService";
 import {parsePaginationQuery, validateSchema, validationMiddleware} from "./validator/SchemaValidator";
 import postValidator from './validator/PostValidator';
 import Pagination from "./utils/Pagination";
+import UserSearchQuery from "./query/UserSearchQuery";
 
 const router = new Router();
 
@@ -87,6 +88,14 @@ router.get('/news', async (ctx) => {
     const paginationQuery = ctx.request.query;
     const pagination = parsePaginationQuery(paginationQuery, []);
     ctx.body = await UserService.getFriendsNews(ctx.state.user, pagination.pageSize, pagination.pageNumber);
+});
+
+router.get('/users/search', async (ctx) => {
+    ctx.assert(ctx.isAuthenticated(), 401);
+    const paginationQuery = ctx.request.query;
+    const pagination = parsePaginationQuery(paginationQuery, []);
+    const userSearchQuery: UserSearchQuery = ctx.request.query;
+    ctx.body = await UserService.searchUsers(ctx.state.user, pagination, userSearchQuery);
 });
 
 

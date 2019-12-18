@@ -14,6 +14,8 @@ import sequelize from "../dao/config/sequelizeConfig";
 import UserDao from "../dao/UserDao";
 import Pagination from "../router/utils/Pagination";
 import PostWithAuthorResponse from "../router/response/internal/PostWithAuthorResponse";
+import UserSearchQuery from "../router/query/UserSearchQuery";
+import PaginationResponse from "../router/response/PaginationResponse";
 
 export default class UserService {
     static async saveUser(userDto): Promise<UserPrivateInfoResponse> {
@@ -224,5 +226,17 @@ export default class UserService {
 
         return Promise.all([friendsPromise, postsPromise])
             .then(() => userProfileForFriendsResponse);
+    }
+
+    static async searchUsers(actor: User, pagination: Pagination, userSearchQuery: UserSearchQuery) {
+        return UserDao.findUsers(userSearchQuery, pagination)
+            .then(res => {
+                return PaginationResponse.from(
+                    res.rows.map(user => new FriendResponse(user.id, user.name, user.lastName)),
+                    pagination.pageNumber,
+                    pagination.pageSize,
+                    res.count
+                )
+            });
     }
 }
