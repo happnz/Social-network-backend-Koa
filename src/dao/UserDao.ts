@@ -28,10 +28,10 @@ export default class UserDao {
         return User.findAndCountAll<User>({
             where: {
                 name: {
-                    [Op.startsWith]: userSearchQuery.name || ''
+                    [Op.iLike]: userSearchQuery.name + '%'
                 },
                 lastName: {
-                    [Op.startsWith]: userSearchQuery.lastName || ''
+                    [Op.iLike]: userSearchQuery.lastName + '%'
                 }
             },
             order: [[pagination.sortBy, pagination.sortDirection]],
