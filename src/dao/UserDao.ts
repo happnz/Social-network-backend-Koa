@@ -40,7 +40,7 @@ export default class UserDao {
         });
     }
 
-    static async findFriends(actor: User, userSearchQuery: UserSearchQuery, pagination: Pagination): Promise<{ rows: User[], count: number }> {
+    static async findFriends(user: User, userSearchQuery: UserSearchQuery, pagination: Pagination): Promise<{ rows: User[], count: number }> {
         const whereOptions = {
             name: {
                 [Op.iLike]: (userSearchQuery.name || '') + '%'
@@ -50,14 +50,14 @@ export default class UserDao {
             }
         };
 
-        const rows = await actor.getFriends({
+        const rows = await user.getFriends({
             where: whereOptions,
             order: [[pagination.sortBy, pagination.sortDirection]],
             limit: pagination.pageSize,
             offset: pagination.offset
         });
 
-        const count = await actor.countFriends({ where: whereOptions });
+        const count = await user.countFriends({ where: whereOptions });
 
         return { rows, count };
     }

@@ -1,13 +1,13 @@
-export default class PaginationResponse {
+export default class PaginationResponse<E> {
     currentPage: number;
     perPage: number;
     lastPage: number;
     total: number;
     pageControls: number[];
-    data: any[];
+    data: E[];
 
-    static from(data: any[], currentPage: number, perPage: number, count: number): PaginationResponse {
-        const res = new PaginationResponse();
+    static from<E>(data: E[], currentPage: number, perPage: number, count: number): PaginationResponse<E> {
+        const res = new PaginationResponse<E>();
         res.currentPage = currentPage;
         res.perPage = perPage;
         const lastPage = Math.ceil(count / perPage);

@@ -16,6 +16,7 @@ import Pagination from "../router/utils/Pagination";
 import PostWithAuthorResponse from "../router/response/internal/PostWithAuthorResponse";
 import UserSearchQuery from "../router/query/UserSearchQuery";
 import PaginationResponse from "../router/response/PaginationResponse";
+import FriendSearchQuery from "../router/query/FriendSearchQuery";
 
 export default class UserService {
     static async saveUser(userDto): Promise<UserPrivateInfoResponse> {
@@ -228,7 +229,7 @@ export default class UserService {
             .then(() => userProfileForFriendsResponse);
     }
 
-    static async searchUsers(actor: User, pagination: Pagination, userSearchQuery: UserSearchQuery) {
+    static async searchUsers(actor: User, pagination: Pagination, userSearchQuery: UserSearchQuery): Promise<PaginationResponse<FriendResponse>> {
         return UserDao.findUsers(userSearchQuery, pagination)
             .then(res => {
                 return PaginationResponse.from(
@@ -240,8 +241,9 @@ export default class UserService {
             });
     }
 
-    static async searchFriends(actor: User, pagination: Pagination, userSearchQuery: UserSearchQuery) {
-        return UserDao.findFriends(actor, userSearchQuery, pagination)
+    static async searchFriends(actor: User, pagination: Pagination, friendSearchQuery: FriendSearchQuery): Promise<PaginationResponse<FriendResponse>> {
+        const user = await this.findUserByIdOrThrow(friendSearchQuery.userId);
+        return UserDao.findFriends(user, friendSearchQuery, pagination)
             .then(res => {
                 return PaginationResponse.from(
                     res.rows.map(user => new FriendResponse(user.id, user.name, user.lastName)),

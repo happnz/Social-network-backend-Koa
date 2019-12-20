@@ -3,7 +3,7 @@ import {sessionSetterMiddleware} from "./utils/AuthUtils";
 import UserService from "../service/UserService";
 import {parsePaginationQuery, validateSchema, validationMiddleware} from "./validator/SchemaValidator";
 import postValidator from './validator/PostValidator';
-import Pagination from "./utils/Pagination";
+import FriendSearchQuery from "./query/FriendSearchQuery";
 import UserSearchQuery from "./query/UserSearchQuery";
 
 const router = new Router();
@@ -102,8 +102,11 @@ router.get('/friends', async (ctx) => {
     ctx.assert(ctx.isAuthenticated(), 401);
     const paginationQuery = ctx.request.query;
     const pagination = parsePaginationQuery(paginationQuery, []);
-    const userSearchQuery: UserSearchQuery = ctx.request.query;
-    ctx.body = await UserService.searchFriends(ctx.state.user, pagination, userSearchQuery);
+    const friendSearchQuery: FriendSearchQuery = ctx.request.query;
+    if (isNaN(friendSearchQuery.userId)) {
+        friendSearchQuery.userId = ctx.state.user.id;
+    }
+    ctx.body = await UserService.searchFriends(ctx.state.user, pagination, friendSearchQuery);
 });
 
 
