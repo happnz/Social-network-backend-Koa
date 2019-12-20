@@ -239,4 +239,16 @@ export default class UserService {
                 )
             });
     }
+
+    static async searchFriends(actor: User, pagination: Pagination, userSearchQuery: UserSearchQuery) {
+        return UserDao.findFriends(actor, userSearchQuery, pagination)
+            .then(res => {
+                return PaginationResponse.from(
+                    res.rows.map(user => new FriendResponse(user.id, user.name, user.lastName)),
+                    pagination.pageNumber,
+                    pagination.pageSize,
+                    res.count
+                )
+            });
+    }
 }

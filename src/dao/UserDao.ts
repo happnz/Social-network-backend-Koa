@@ -28,15 +28,37 @@ export default class UserDao {
         return User.findAndCountAll<User>({
             where: {
                 name: {
-                    [Op.iLike]: userSearchQuery.name + '%'
+                    [Op.iLike]: (userSearchQuery.name || '') + '%'
                 },
                 lastName: {
-                    [Op.iLike]: userSearchQuery.lastName + '%'
+                    [Op.iLike]: (userSearchQuery.lastName || '') + '%'
                 }
             },
             order: [[pagination.sortBy, pagination.sortDirection]],
             limit: pagination.pageSize,
             offset: pagination.offset
         });
+    }
+
+    static async findFriends(actor: User, userSearchQuery: UserSearchQuery, pagination: Pagination): Promise<{ rows: User[], count: number }> {
+        const whereOptions = {
+            name: {
+                [Op.iLike]: (userSearchQuery.name || '') + '%'
+            },
+            lastName: {
+                [Op.iLike]: (userSearchQuery.lastName || '') + '%'
+            }
+        };
+
+        const rows = await actor.getFriends({
+            where: whereOptions,
+            order: [[pagination.sortBy, pagination.sortDirection]],
+            limit: pagination.pageSize,
+            offset: pagination.offset
+        });
+
+        const count = await actor.countFriends({ where: whereOptions });
+
+        return { rows, count };
     }
 }

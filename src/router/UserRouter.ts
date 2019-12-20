@@ -98,5 +98,13 @@ router.get('/users/search', async (ctx) => {
     ctx.body = await UserService.searchUsers(ctx.state.user, pagination, userSearchQuery);
 });
 
+router.get('/friends', async (ctx) => {
+    ctx.assert(ctx.isAuthenticated(), 401);
+    const paginationQuery = ctx.request.query;
+    const pagination = parsePaginationQuery(paginationQuery, []);
+    const userSearchQuery: UserSearchQuery = ctx.request.query;
+    ctx.body = await UserService.searchFriends(ctx.state.user, pagination, userSearchQuery);
+});
+
 
 export default router;
