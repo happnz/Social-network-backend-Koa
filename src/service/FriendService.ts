@@ -1,4 +1,5 @@
 import User from "../model/User";
+import {Relation} from "../router/response/Relation";
 
 export default class FriendService {
     static async createFriendRelation(user1: User, user2: User): Promise<void> {
@@ -23,5 +24,15 @@ export default class FriendService {
         return user1.hasFriend(user2)
             .then(res1 => user2.hasFriend(user1)
                 .then(res2 => res1 && res2));
+    }
+
+    static async getRelationType(actor: User, user2: User): Promise<Relation> {
+        if (await actor.hasFriend(user2)) {
+            return Relation.FRIEND;
+        } else if (actor.id === user2.id) {
+            return Relation.PERSONAL;
+        } else {
+            return Relation.USER;
+        }
     }
 }

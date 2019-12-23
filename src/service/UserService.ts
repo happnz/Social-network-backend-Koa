@@ -17,6 +17,7 @@ import PostWithAuthorResponse from "../router/response/internal/PostWithAuthorRe
 import UserSearchQuery from "../router/query/UserSearchQuery";
 import PaginationResponse from "../router/response/PaginationResponse";
 import FriendSearchQuery from "../router/query/FriendSearchQuery";
+import FriendWithRelationResponse from "../router/response/internal/FriendWithRelationResponse";
 
 export default class UserService {
     static async saveUser(userDto): Promise<UserPrivateInfoResponse> {
@@ -158,6 +159,43 @@ export default class UserService {
         return response;
     }
 
+    static async searchUsers(actor: User, pagination: Pagination, userSearchQuery: UserSearchQuery): Promise<PaginationResponse<FriendWithRelationResponse>> {
+        return UserDao.findUsers(userSearchQuery, pagination)
+            .then(res => {
+                return Promise.all(res.rows.map(async (user) => {
+                    const relation = await FriendService.getRelationType(actor, user);
+                    return new FriendWithRelationResponse(user.id, user.name, user.lastName, relation);
+                })).then(data => {
+                        return PaginationResponse.from(
+                            data,
+                            pagination.pageNumber,
+                            pagination.pageSize,
+                            res.count
+                        )
+                    })
+
+            });
+    }
+
+    static async searchFriends(actor: User, pagination: Pagination, friendSearchQuery: FriendSearchQuery): Promise<PaginationResponse<FriendWithRelationResponse>> {
+        const user = await this.findUserByIdOrThrow(friendSearchQuery.userId);
+        return UserDao.findFriends(user, friendSearchQuery, pagination)
+            .then(res => {
+                return Promise.all(res.rows.map(async (user) => {
+                    const relation = await FriendService.getRelationType(actor, user);
+                    return new FriendWithRelationResponse(user.id, user.name, user.lastName, relation);
+                }))
+                    .then(data => {
+                        return PaginationResponse.from(
+                            data,
+                            pagination.pageNumber,
+                            pagination.pageSize,
+                            res.count
+                        )
+                    })
+            });
+    }
+
     private static assertFriendIdIsDifferent(actorId: number, friendId: number) {
         if (actorId === friendId) {
             throw new ServiceError('Friend requests to oneself are prohibited', 400);
@@ -229,28 +267,4 @@ export default class UserService {
             .then(() => userProfileForFriendsResponse);
     }
 
-    static async searchUsers(actor: User, pagination: Pagination, userSearchQuery: UserSearchQuery): Promise<PaginationResponse<FriendResponse>> {
-        return UserDao.findUsers(userSearchQuery, pagination)
-            .then(res => {
-                return PaginationResponse.from(
-                    res.rows.map(user => new FriendResponse(user.id, user.name, user.lastName)),
-                    pagination.pageNumber,
-                    pagination.pageSize,
-                    res.count
-                )
-            });
-    }
-
-    static async searchFriends(actor: User, pagination: Pagination, friendSearchQuery: FriendSearchQuery): Promise<PaginationResponse<FriendResponse>> {
-        const user = await this.findUserByIdOrThrow(friendSearchQuery.userId);
-        return UserDao.findFriends(user, friendSearchQuery, pagination)
-            .then(res => {
-                return PaginationResponse.from(
-                    res.rows.map(user => new FriendResponse(user.id, user.name, user.lastName)),
-                    pagination.pageNumber,
-                    pagination.pageSize,
-                    res.count
-                )
-            });
-    }
 }
