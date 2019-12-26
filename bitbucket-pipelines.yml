@@ -1,0 +1,30 @@
+pipelines:
+  branches:
+    setup-ci-cd:
+      - step:
+          name: Unit test
+          image: node:10.15.3
+          caches:
+            - node
+          script:
+            - npm install
+            - npm run test
+      - step:
+          name: Compile tsc sources
+          image: postgres:10
+          script:
+            - npm run build
+            - cp config -r dist
+            - cp package*.json dist
+            - cd dist && tar czvf ../application.tgz *
+          artifacts:
+            - application.tgz
+      - step:
+          name: Deploy to staging
+          deployment: staging
+          script:
+            - pipe: atlassian/heroku-deploy:0.1.1
+              variables:
+                HEROKU_API_KEY: $HEROKU_API_KEY
+                HEROKU_APP_NAME: $HEROKU_APP_NAME
+                ZIP_FILE: "application.tgz"
