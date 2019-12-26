@@ -1,6 +1,6 @@
 pipelines:
   branches:
-    setup-ci-cd:
+    master:
       - step:
           name: Unit test
           image: node:10.15.3
