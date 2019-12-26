@@ -15,9 +15,7 @@ import {Sequelize} from "sequelize";
 
 const app = new Koa();
 
-if (process.env.NODE_ENV !== 'production') {
-    app.use(cors({origin: 'http://localhost:4200', credentials: true}))
-}
+app.use(cors({origin: config.get('corsUrl'), credentials: true}));
 
 app.use(logger());
 app.use(async (ctx, next) => {
@@ -54,6 +52,6 @@ app.use(authRouter.allowedMethods());
 app.use(userRouter.routes());
 app.use(userRouter.allowedMethods());
 
-export default app.listen(3000, () => {
+export default app.listen(process.env.PORT || 3000, () => {
     console.log("Koa started");
 });
