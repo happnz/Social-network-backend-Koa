@@ -4,6 +4,7 @@ import * as logger from "koa-logger";
 import * as json from "koa-json";
 import * as session from "koa-session";
 import * as bodyparser from "koa-bodyparser";
+import healthCheckRouter from "./router/HealthCheckRouter";
 import authRouter from "./router/AuthRouter";
 import userRouter from "./router/UserRouter";
 import * as cors from "@koa/cors";
@@ -47,6 +48,7 @@ require("./config/PassportConfig");
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use(healthCheckRouter.routes());
 app.use(authRouter.routes());
 app.use(authRouter.allowedMethods());
 app.use(userRouter.routes());
