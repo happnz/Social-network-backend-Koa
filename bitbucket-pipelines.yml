@@ -22,6 +22,7 @@ pipelines:
           name: Compile tsc sources
           image: node:10.15.3
           script:
+            - ls node_modules
             - npm run build
             - cp config -r dist
             - cp package*.json dist
