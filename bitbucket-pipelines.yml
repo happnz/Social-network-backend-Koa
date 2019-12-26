@@ -27,7 +27,7 @@ pipelines:
             - ls node_modules
             - npm run build
             - cp config -r dist
-            - cp package*.json dist
+            - cp package*.json Procfile dist
             - cd dist && tar czvf ../application.tgz *
           artifacts:
             - application.tgz
