@@ -7,7 +7,6 @@ pipelines:
           caches:
             - node
           script:
-            - ls node_modules
             - npm install
             - npm run test
       - step:
@@ -22,6 +21,8 @@ pipelines:
       - step:
           name: Compile tsc sources
           image: node:10.15.3
+          caches:
+            - node
           script:
             - ls node_modules
             - npm run build
