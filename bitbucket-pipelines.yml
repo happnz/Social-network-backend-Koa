@@ -24,7 +24,6 @@ pipelines:
           caches:
             - node
           script:
-            - ls node_modules
             - npm run build
             - cp config migrations -r dist
             - cp package*.json Procfile dist

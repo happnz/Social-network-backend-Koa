@@ -23,9 +23,11 @@ app.use(async (ctx, next) => {
         await next();
     } catch (err) {
         ctx.status = err.status || 500;
-        ctx.body = err.message;
         if (ctx.status >= 500) {
             ctx.app.emit('error', err, ctx);
+            ctx.body = 'Internal server error';
+        } else {
+            ctx.body = err.message;
         }
     }
 });

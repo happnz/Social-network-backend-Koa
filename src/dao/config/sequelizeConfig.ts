@@ -13,7 +13,8 @@ let options: Options = {
     dialect: "postgres",
     define: {
         timestamps: false
-    }
+    },
+    logging: false
 };
 
 if (process.env.DATABASE_URL) {
