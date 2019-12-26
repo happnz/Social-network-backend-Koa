@@ -10,8 +10,17 @@ pipelines:
             - npm install
             - npm run test
       - step:
+          name: Integration test
+          image: node:10.15.3
+          caches:
+            - node
+          script:
+            - npm run integration-test
+          services:
+            - postgres
+      - step:
           name: Compile tsc sources
-          image: postgres:10
+          image: node:10.15.3
           script:
             - npm run build
             - cp config -r dist
@@ -28,3 +37,12 @@ pipelines:
                 HEROKU_API_KEY: $HEROKU_API_KEY
                 HEROKU_APP_NAME: $HEROKU_APP_NAME
                 ZIP_FILE: "application.tgz"
+
+definitions:
+  services:
+    postgres:
+      image: postgres:10
+      variables:
+        POSTGRES_DB: 'social_test'
+        POSTGRES_USER: 'admin_social'
+        POSTGRES_PASSWORD: '123456'
