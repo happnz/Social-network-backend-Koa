@@ -1,6 +1,6 @@
 process.env.NODE_ENV = 'test';
 
-import sequelize from "../../dao/config/sequelizeConfig";
+import sequelize from "../../../dao/config/sequelizeConfig";
 
 describe('sequelize', () => {
     it('should start up', (done) => {

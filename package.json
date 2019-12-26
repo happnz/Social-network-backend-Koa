@@ -6,8 +6,8 @@
   "scripts": {
     "start": "nodemon --watch ./src/index.ts",
     "debug": "nodemon --inspect ./src/index.ts",
-    "test": "mocha -r ts-node/register src/**/*.test.ts",
-    "integration-test": "mocha -r ts-node/register src/**/*.test.integration.ts",
+    "test": "mocha -r ts-node/register src/test/unit/**/*.test.ts",
+    "integration-test": "mocha -r ts-node/register src/test/integration/**/*.test.ts",
     "build": "node_modules/typescript/bin/tsc"
   },
   "author": "",

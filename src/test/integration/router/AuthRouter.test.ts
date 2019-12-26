@@ -1,6 +1,6 @@
 process.env.NODE_ENV = 'test';
 
-import server from '../../index';
+import server from '../../../index';
 
 import DBMigrate = require("db-migrate");
 import "mocha";
