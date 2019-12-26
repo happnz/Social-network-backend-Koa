@@ -14,5 +14,6 @@
     "host": "localhost",
     "database": "social_test",
     "schema": "public"
-  }
+  },
+  "prod" : {"ENV": "DATABASE_URL"}
 }
