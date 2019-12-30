@@ -1,6 +1,7 @@
 import * as passport from "koa-passport";
 import {Strategy as LocalStrategy} from "passport-local";
 import User from "../model/User";
+import * as bcrypt from "bcryptjs";
 
 passport.serializeUser(function(user, done) {
     done(null, user.id);
@@ -31,7 +32,7 @@ passport.use(new LocalStrategy({
             if (!user) {
                 done(null, false);
             }
-            if (user.password === password) { //TODO password hashing
+            if (bcrypt.compareSync(password, user.password)) {
                 done(null, user)
             } else {
                 done(null, false);

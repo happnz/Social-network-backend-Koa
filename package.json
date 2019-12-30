@@ -16,6 +16,7 @@
     "@koa/cors": "^2.2.3",
     "ajv": "^6.10.2",
     "apidoc": "^0.18.0",
+    "bcryptjs": "^2.4.3",
     "cls-hooked": "^4.2.2",
     "config": "^3.2.4",
     "db-migrate": "^0.11.6",
