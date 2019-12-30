@@ -40,6 +40,7 @@ describe('AuthRouter', () => {
                 .send(userBody);
 
             expect(res.status).to.equal(200);
+            delete userBody.password;
             expect(res.body).to.containSubset(userBody);
             expect(res).to.have.cookie(config.get('cookieName'));
         });
